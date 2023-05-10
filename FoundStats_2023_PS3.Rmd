@@ -1,0 +1,290 @@
+---
+title: "DSCI 610 Found Comp Stats: Problem Set 3"
+author: "Kendal Tinney"
+date: "May 2, 2023"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is the third graded assignment for the course. It will be worth 100 points and is due by 12pm on Tuesday, May 9th. To complete this assignment, you will write code in this RMarkdown file, "knit" (render) the file to an `.html` output file, and upload both files to Canvas. Be sure to replace "Your Name" with your name as the author of this document.
+
+For Unix code, please copy and paste BOTH the code you ran and the output into the appropriate chunks provided with each problem. Please give plots and plot axes meaningful labels. Please make sure that all of your code is echoed, and that any output requested in the instructions is evaluated.
+
+## Part 1 Pipes and Scripts (35 pts)
+
+Download all of the "Drerio_development" csv files from Canvas. Make sure they are saved in a directory accessible to your command line application (terminal or Ubuntu). __Complete the following problems using Unix code, and please print the code and output for all problems into the chunks below.__
+
+1. Use a Unix code to display the path for your downloaded files. (1 pts)
+
+```{r engine = 'bash', eval = FALSE}
+(base) dyn-10-108-15-200:ProblemSet3 kendaltinney$ pwd
+/Users/kendaltinney/Dropbox (University of Oregon)/Year 1/S23/DSCI 610/problem_sets/ProblemSet3
+#use ls to show the files in that directory
+(base) Kendals-Air:ProblemSet3 kendaltinney$ ls
+Drerio_development1.csv			Drerio_development_complete1.csv
+Drerio_development2.csv			Drerio_development_complete_new.csv
+Drerio_development3.csv			FoundStats_2023_PS3.Rmd
+Drerio_development_complete.csv
+```
+
+2. Using piped commands, move data from all three files into one combined file, titled "Drerio_development_complete.csv". You'll  work with this file for the following steps. (4 pts)
+
+```{r engine = 'bash', eval = FALSE}
+(base) dyn-10-108-15-200:ProblemSet3 kendaltinney$ cat Drerio_development1.csv Drerio_development2.csv Drerio_development3.csv > Drerio_development_complete.csv
+#did not get an output, checked with ls and the file is in the directory
+#Drerio_development*.csv
+```
+
+3. Create a new column named "Sample_ID" that combines the Sample and Group columns into one column. Print out the first 5 rows of the dataset to check that your code worked. (5 pts)
+
+```{r engine = 'bash', eval = FALSE}
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ awk -F ',' '{print $2 "," $3 "," $4 "," $5 "," $6 "," $7 "," $8 "," $9}' Drerio_development_complete.csv > Drerio_development_complete1.csv #Deleting the first column that s unlabeled with row numbers
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ awk -F ',' '{print $1"_"$6 "," $2 "," $3 "," $4 "," $5 "," $7 "," $8}' Drerio_development_complete1.csv > Drerio_development_sampID.csv #combining sample and group columns while printing the rest of the columns
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ head -5 Drerio_development_sampID.csv #checking to see if the output is correct
+"Sample"_"Group","Condition","Sex","Age_Days","Pigmentation","Weight_mg","Length_cm"
+1_"A","Control","Female",1,33,8.23184310557877,0.921109337043722
+2_"A","Control","Male",2,77,9.693759090345,1.83379862589991
+3_"A","Control","Female",3,15,9.29444477846037,4.14459883895719
+4_"A","Control","Male",4,39,10.093248494996,4.98573008030553
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$  sed -e 's/"Sample"_"Group"/"Sample_ID"/g' Drerio_development_sampID.csv > Drerio_development_sample_ID.csv #changing the name of column one to Sample_ID
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ sed -e 's/"//g' Drerio_development_sample_ID.csv > sample_ID.csv #used to remove the quotes around all the letters
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ head -5 sample_ID.csv  #checking work again
+Sample_ID,Condition,Sex,Age_Days,Pigmentation,Weight_mg,Length_cm
+1_A,Control,Female,1,33,8.23184310557877,0.921109337043722
+2_A,Control,Male,2,77,9.693759090345,1.83379862589991
+3_A,Control,Female,3,15,9.29444477846037,4.14459883895719
+4_A,Control,Male,4,39,10.093248494996,4.98573008030553
+
+#Yea it worked and its not too complicated
+
+#(base) dyn-10-108-15-200:ProblemSet3 kendaltinney$ awk -F ',' 'BEGIN{OFS=","; print "Sample_ID, ,Sample,Condition,Sex,Age_Days,Pigmentation,Group,Weight_mg,Length_cm"} NR>1{print $2"_"$7,$1,$2,$3,$4,$5,$6,$7,$8,$9}' Drerio_development_complete.csv > Drerio_development_complete1.csv
+#(base) dyn-10-108-15-200:ProblemSet3 kendaltinney$ head -5 Drerio_development_complete1.csv 
+#Sample_ID, ,Sample,Condition,Sex,Age_Days,Pigmentation,Group,Weight_mg,Length_cm
+#1_"A","1",1,"Control","Female",1,33,"A",8.23184310557877,0.921109337043722
+#2_"A","2",2,"Control","Male",2,77,"A",9.693759090345,1.83379862589991
+#3_"A","3",3,"Control","Female",3,15,"A",9.29444477846037,4.14459883895719
+#4_"A","4",4,"Control","Male",4,39,"A",10.093248494996,4.98573008030553
+
+```
+
+4. Create a new file, called "Drerio_development_analysis.txt" where you'll store summary data for your samples. Calculate the mean weight, length, and pigmentation score for each group in the dataset (Sex, Age, Condition). Store these 9 values in the "Drerio_development_analysis.txt" file. (10 pts)
+
+```{r engine = 'bash', eval = FALSE}
+# Paste your analysis code here:
+#awk '($3 ~ /^Male/) {total += $5} END {print total/NR}' sample_ID.csv 
+#use egrep and pipe those results to awk
+#for each group
+#List of combinations -> Control:Weight, Control:Length, Control:Pigmentation, Treatment:Weight, Treatment:Length, Treatment:Pigmentation, Male:Weight, Male:Length, Male:Pigmentation, Female:Weight, Female:Length, Female:Pigmentation, 1:Weight, 1:Length, 1:Pigmentation, 2:Weight, 2:Length, 2:Pigmentation, 3:Weight, 3:Length, 3:Pigmentation, 4:Weight, 4:Length, 4:Pigmentation, 5:Weight, 5:Length, 5:Pigmentation
+grep "Control" sample_ID.csv | awk -F, '{sum += $7} END {print "Control:Length " sum/NR}' >> Drerio_development_analysis.txt
+grep "Control" sample_ID.csv | awk -F, '{sum += $6} END {print "Control:Weight " sum/NR}' >> Drerio_development_analysis.txt
+grep "Control" sample_ID.csv | awk -F, '{sum += $5} END {print "Control:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $7} END {print "Treatment:Length " sum/NR}' >> Drerio_development_analysis.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $6} END {print "Treatment:Weight " sum/NR}' >> Drerio_development_analysis.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $5} END {print "Treatment:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $7} END {print "Male:Length " sum/NR}' >> Drerio_development_analysis.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $6} END {print "Male:Weight " sum/NR}' >> Drerio_development_analysis.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $5} END {print "Male:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $7} END {print "Female:Length " sum/NR}' >> Drerio_development_analysis.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $6} END {print "Female:Weight " sum/NR}' >> Drerio_development_analysis.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $5} END {print "Female:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $7} END {print "1:Length " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $6} END {print "1:Weight " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $5} END {print "1:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $7} END {print "2:Length " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $6} END {print "2:Weight " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $5} END {print "2:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $7} END {print "3:Length " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $6} END {print "3:Weight " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $5} END {print "3:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $7} END {print "4:Length " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $6} END {print "4:Weight " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $5} END {print "4:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $7} END {print "5:Length " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $6} END {print "5:Weight " sum/NR}' >> Drerio_development_analysis.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $5} END {print "5:Pigmentation " sum/NR}' >> Drerio_development_analysis.txt
+```
+
+5. Print out the contents of that analysis file and paste them in the chunk below. (2 pts)
+
+```{r engine = 'bash', eval = FALSE}
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ cat Drerio_development_analysis.txt 
+Control:Length 2.9542
+Control:Weight 9.56008
+Control:Pigmentation 48.09
+Treatment:Length 3.0351
+Treatment:Weight 9.48512
+Treatment:Pigmentation 51.9333
+Male:Length 2.93893
+Male:Weight 9.02871
+Male:Pigmentation 49.6433
+Female:Length 3.05036
+Female:Weight 10.0165
+Female:Pigmentation 50.38
+1:Length 0.989114
+1:Weight 9.41364
+1:Pigmentation 49.1417
+2:Length 2.05811
+2:Weight 9.6019
+2:Pigmentation 47.2083
+3:Length 3.0503
+3:Weight 9.54179
+3:Pigmentation 52.7
+4:Length 4.06944
+4:Weight 9.44377
+4:Pigmentation 48.0083
+5:Length 4.80628
+5:Weight 9.61188
+5:Pigmentation 53
+```
+
+6. Using the code you wrote in Problem 4 above, create a script that will combine all of those steps into one easy command. The outcome should be the same: calculating the means of various measures for the different group in your combined file, and storing those values in a new .txt file. Paste all the code in your script in the chunk below. (10 pts)
+
+```{r engine = 'bash', eval = FALSE}
+#!/bin/bash
+grep "Control" sample_ID.csv | awk -F, '{sum += $7} END {print "Control:Length " sum/NR}' >> drerio_analysis.sh.txt
+grep "Control" sample_ID.csv | awk -F, '{sum += $6} END {print "Control:Weight " sum/NR}' >> drerio_analysis.sh.txt
+grep "Control" sample_ID.csv | awk -F, '{sum += $5} END {print "Control:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $7} END {print "Treatment:Length " sum/NR}' >> drerio_analysis.sh.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $6} END {print "Treatment:Weight " sum/NR}' >> drerio_analysis.sh.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $5} END {print "Treatment:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $7} END {print "Male:Length " sum/NR}' >> drerio_analysis.sh.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $6} END {print "Male:Weight " sum/NR}' >> drerio_analysis.sh.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $5} END {print "Male:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $7} END {print "Female:Length " sum/NR}' >> drerio_analysis.sh.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $6} END {print "Female:Weight " sum/NR}' >> drerio_analysis.sh.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $5} END {print "Female:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $7} END {print "1:Length " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $6} END {print "1:Weight " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $5} END {print "1:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $7} END {print "2:Length " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $6} END {print "2:Weight " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $5} END {print "2:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $7} END {print "3:Length " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $6} END {print "3:Weight " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $5} END {print "3:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $7} END {print "4:Length " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $6} END {print "4:Weight " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $5} END {print "4:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $7} END {print "5:Length " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $6} END {print "5:Weight " sum/NR}' >> drerio_analysis.sh.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $5} END {print "5:Pigmentation " sum/NR}' >> drerio_analysis.sh.txt
+```
+
+7. Run the script, and paste the code you used to run the script below. Include the code required to change permissions for the script. (3 pts)
+
+```{r engine = 'bash', eval = FALSE}
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ chmod u+x drerio_analysis.sh 
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ ./drerio_analysis.sh 
+(base) dyn-10-108-22-247:ProblemSet3 kendaltinney$ ls
+Drerio_development1.csv			Drerio_development_sample_ID.csv
+Drerio_development2.csv			FoundStats_2023_PS3.Rmd
+Drerio_development3.csv			PS3 Part 4 answers
+Drerio_development_analysis.txt		drerio_analysis.sh
+Drerio_development_complete.csv		drerio_analysis.sh.txt
+Drerio_development_complete1.csv	sample_ID.csv
+Drerio_development_sampID.csv
+```
+
+
+## Part 2 Talapas (20 pts)
+Upload the "Drerio_development_complete.csv" file you made in Part 1 to your Talapas account.X
+
+1. Convert your script from Part 1 that you ran on your personal computer into a bash script that can be submitted as a job on Talapas. Paste the content of that script in the chunk below. (10 pts)
+
+```{r engine = 'bash',}
+#!/bin/bash
+#SBATCH --account=datascience
+#SBATCH --job-name=problem_set_3
+#SBATCH --output=drerio_analysis_talapas.out
+#SBATCH --error=drerio_analysis_talapas.err
+#SBATCH --time=0-00:02:00
+#SBATCH --partition=short
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+grep "Control" sample_ID.csv | awk -F, '{sum += $7} END {print "Control:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Control" sample_ID.csv | awk -F, '{sum += $6} END {print "Control:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Control" sample_ID.csv | awk -F, '{sum += $5} END {print "Control:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $7} END {print "Treatment:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $6} END {print "Treatment:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Treatment" sample_ID.csv | awk -F, '{sum += $5} END {print "Treatment:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $7} END {print "Male:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $6} END {print "Male:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Male" sample_ID.csv | awk -F, '{sum += $5} END {print "Male:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $7} END {print "Female:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $6} END {print "Female:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+grep "Female" sample_ID.csv | awk -F, '{sum += $5} END {print "Female:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $7} END {print "1:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $6} END {print "1:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "1")' sample_ID.csv | awk -F, '{sum += $5} END {print "1:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $7} END {print "2:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $6} END {print "2:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "2")' sample_ID.csv | awk -F, '{sum += $5} END {print "2:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $7} END {print "3:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $6} END {print "3:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "3")' sample_ID.csv | awk -F, '{sum += $5} END {print "3:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $7} END {print "4:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $6} END {print "4:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "4")' sample_ID.csv | awk -F, '{sum += $5} END {print "4:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $7} END {print "5:Length " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $6} END {print "5:Weight " sum/NR}' >> drerio_analysis_talapas.sh.txt
+awk -F, '($4 == "5")' sample_ID.csv | awk -F, '{sum += $5} END {print "5:Pigmentation " sum/NR}' >> drerio_analysis_talapas.sh.txt
+
+
+```
+
+2. Describe what the output file (.out) generated from your Talapas job looks like. Is there any text or information in it? Paste the contents of the file in the chunk below, and then describe why your output file looks the way that it does. (5 pts)
+
+```{r engine = 'bash', eval = FALSE}
+#my output file is empty 
+#pasting contents "~literally the void~"
+#i think my output file is empty because in my script I told each line to put the outputs into a separate txt file drerio_analysis_talapas.sh.txt, this file has all the mean outputs that I am looking for. I should have put the name of my output file in the append part of each command. 
+```
+
+3. Describe what the error file (.err) generated from your Talapas job looks like. Is there any text or information in it? Paste the contents of the file in the chunk below, and then describe why your error file looks the way that it does. (5 pts)
+
+```{r engine = 'bash', eval = FALSE}
+#my output file is empty 
+#pasting contents "~literally the void~"
+#i think that this file is empty because there is no errors
+```
+
+
+## Part 3 GitHub (20 pts)
+For the following problems, please access GitHub from the desktop application. The desktop application can be downloaded here: https://desktop.github.com/ 
+
+1. Create a GitHub account (if you don't already have one) at github.com. Type your username here so that I can look up your account: _______kendalrt__________ (3 pts) X
+
+2. Go through the short tutorial available throught the GitHub desktop app. (You may need to download a text editor app, such as VSCode.) In your own words, define the  following terms: (1 pt each) X
+  - repository: A repository is like an area where you can organize your project, the repository can include several different folders, files, images, text.. etc. 
+  - branch: A branch is created when there is different versions of your project that you are working with. This allows people to work with different versions of the repo at the same time. You can use branches to test out different pieces of code without changing the main project file. 
+  - commit: when you want to save changes that you made to a file you commit it to the main repository. Committing is essentially saving. 
+  - push: used to transfer the commit you made on your local computer to the remote shared repository on GitHub. 
+  - pull: used to take changes and new commits from the remote repository and add them to the repository you have been working with on your local computer. 
+
+3. Start a new repository for this class, titled Found_Stats_2023. (2 pts) X
+
+4. Once you've finished Parts 1-3 of this assignment, upload your homework to your GitHub Found_Stats_2023 repository. Then, use the GitHub desktop app and your text editor to complete the reflection portion of this assignment as new commits to the GitHub document. (Note: You will still upload the final, completed and knit version of your homework on Canvas.) 
+
+Take a screenshot of your commit history (either the history tab in the GitHub desktop app or the Pull Requests tab on your GitHub via the browser) and insert as a picture in the chunk below. You will replace the [/path/to/IMAGE.jpeg] text with the correct path for your image. Be sure to include the correct extension. Please check if your image displays correctly when knit - you may need to change the "out.width = '80%'" variable in the chunk header. (10 pts)
+
+```{r, echo=FALSE, out.width='80%', fig.asp=.75, fig.align='center'}
+knitr::include_graphics("/path/to/IMAGE.jpeg")
+```
+
+## Part 4 Reflection (25 pts)
+Answer the following questions in a couple of sentences each. No right or wrong answers! (5 pts each)
+
+1. Since we have reached the end of the first half of the term, reflect on your coding skills. How does where you are now compare to how you felt at the beginning of this term?
+
+2. What aspects of the class structure have been helpful and that you'd like to see continued?
+
+3. Are there aspects of the class structure that could be improved to help your learning?
+
+4. Take a look at the syllabus schedule for the second half of the term. Are there any topics in particular that seem more exciting or useful for you?
+
+5. Are there any other basic coding skills that you wish we would have covered in this class, that we could try to incorporate in this class for next year?
