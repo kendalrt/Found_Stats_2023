@@ -280,11 +280,12 @@ knitr::include_graphics("/path/to/IMAGE.jpeg")
 Answer the following questions in a couple of sentences each. No right or wrong answers! (5 pts each)
 
 1. Since we have reached the end of the first half of the term, reflect on your coding skills. How does where you are now compare to how you felt at the beginning of this term?
-
+- my coding skills have imporved significantly over the course of the term. Not only that I also feel my confidence in coding and ability to problem solve skills using the internet has improved. 
 2. What aspects of the class structure have been helpful and that you'd like to see continued?
-
+- working through and doing some coding in during class has been very helpful. Keeping the class interactive, tight knit, and communicative has been good for encuraging collaborative group for us to work together. 
 3. Are there aspects of the class structure that could be improved to help your learning?
-
+- I think the class should be split in half with a lecture at the begining and work time/in class problem set time during the second half. I feel alot of the material we are learning in class isnt quite at the level at which our hw is. By having time in class to bridge the the material introduced in with the difficulty of the hw would significantly improve the course. Having more practice and instuction on how to use github/the course github earlier on would be helpful so we can use that as a resource. 
 4. Take a look at the syllabus schedule for the second half of the term. Are there any topics in particular that seem more exciting or useful for you?
-
+I am most excited to learn about experimental design, the history of statistics, and exploratory data anylsis. I am not entirely sure what will be the most useful, probably learning how to determine if there is significance between two data sets, so a t-test.
 5. Are there any other basic coding skills that you wish we would have covered in this class, that we could try to incorporate in this class for next year?
+- it would have been beneficial to spend more time going over R, it felt very rushed and I feel like still dont really understand the syntax. I particularly wish we went over and had more practice with for loops and general basics of the language. 
